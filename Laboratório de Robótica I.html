@@ -1,0 +1,718 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Laboratório de Robótica I</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: caderno técnico de oficina — régua de módulos fixa à esquerda, bancadas de ensaio (simuladores) em folha quadriculada */
+:root{
+  --paper:#EEF2F4; --panel:#FFFFFF; --ink:#16202A; --muted:#566573; --line:#D3DBE1; --grid:#E1E7EB;
+  --rust:#B23A12; --rust-soft:#F6E3DA; --green:#2F7D60; --green-soft:#DDEFE6; --navy:#1D3557; --warn:#A86A00; --bad:#B3261E; --good:#2F7D60;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3","Segoe UI",Helvetica,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0F151B; --panel:#151D25; --ink:#E5ECF1; --muted:#97A6B3; --line:#2A3743; --grid:#18222B;
+  --rust:#EE7448; --rust-soft:#3A2219; --green:#5CC49B; --green-soft:#17322A; --navy:#A9C3E4; --warn:#E3A93B; --bad:#F2867D; --good:#5CC49B; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0F151B; --panel:#151D25; --ink:#E5ECF1; --muted:#97A6B3; --line:#2A3743; --grid:#18222B;
+  --rust:#EE7448; --rust-soft:#3A2219; --green:#5CC49B; --green-soft:#17322A; --navy:#A9C3E4; --warn:#E3A93B; --bad:#F2867D; --good:#5CC49B; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px}
+a{color:var(--rust)}
+h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.05;text-wrap:balance;margin:0}
+h2{font-size:clamp(2rem,4vw,2.8rem);letter-spacing:.01em}
+h3{font-size:1.35rem;font-weight:600;letter-spacing:.02em}
+p{margin:0;max-width:68ch}
+.wrap{display:grid;grid-template-columns:220px minmax(0,1fr);gap:40px;max-width:1240px;margin:0 auto;padding-inline:24px;padding-block:0 64px}
+nav.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;padding-block:28px;display:flex;flex-direction:column;gap:2px}
+.brand{font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.brand b{color:var(--rust)}
+nav.rail a{display:grid;grid-template-columns:34px 1fr;align-items:baseline;text-decoration:none;color:var(--muted);padding:7px 10px;border-radius:6px;font-weight:600}
+nav.rail a span{font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+nav.rail a:hover,nav.rail a.on{color:var(--ink);background:var(--panel)}
+nav.rail a.on span{color:var(--rust)}
+main{min-width:0;display:flex;flex-direction:column;gap:72px;padding-block:28px}
+section{scroll-margin-top:16px;display:flex;flex-direction:column;gap:22px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--rust)}
+.lede{font-size:1.12rem;color:var(--muted)}
+.bench{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;display:grid;gap:18px}
+.bench-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:2px 8px;border-radius:99px}
+.split{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:20px;align-items:start}
+.split>*{min-width:0}
+canvas{display:block;width:100%;border-radius:8px;background:var(--paper);touch-action:none}
+.controls{display:grid;gap:14px}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-weight:600;font-size:.95rem}
+.ctl output,.val{font-family:var(--mono);font-size:.9rem;font-variant-numeric:tabular-nums;color:var(--rust);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--rust)}
+select,button{font:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button,.btn{border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600;font-size:.92rem}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.btn.primary{background:var(--rust);border-color:var(--rust);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--rust);outline-offset:2px}
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.readout div{border-top:2px solid var(--line);padding-top:6px}
+.readout dt{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.readout dd{margin:0;font-family:var(--mono);font-size:1.15rem;font-variant-numeric:tabular-nums}
+.formula{font-family:var(--mono);font-size:.92rem;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;overflow-wrap:anywhere}
+.note{font-size:.9rem;color:var(--muted)}
+.pill{display:inline-block;font-family:var(--mono);font-size:.8rem;font-weight:600;padding:2px 10px;border-radius:99px}
+.pill.good{background:var(--green-soft);color:var(--good)} .pill.bad{background:var(--rust-soft);color:var(--bad)} .pill.warn{background:var(--rust-soft);color:var(--warn)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:.95rem;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--display);font-size:1.02rem;letter-spacing:.03em;font-weight:600;background:var(--paper)}
+tr:last-child td{border-bottom:0}
+td.hl,th.hl{background:var(--green-soft)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.card h3{font-size:1.2rem}
+.card .ex{font-size:.9rem;color:var(--green);font-style:italic}
+.k{font-family:var(--mono);font-size:.85rem;color:var(--rust)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:28px;align-items:center}
+.hero h1{font-size:clamp(2.6rem,5.6vw,4.3rem);letter-spacing:-.005em}
+.hero h1 em{font-style:normal;color:var(--rust)}
+.hero .meta{font-family:var(--mono);font-size:.82rem;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.hero canvas{aspect-ratio:4/3;cursor:crosshair;border:1px solid var(--line);background:var(--panel)}
+.hero-cap{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+
+/* sensores */
+.sort{display:grid;gap:8px}
+.sort-row{display:grid;grid-template-columns:minmax(150px,1.2fr) auto auto 26px;gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper)}
+.sort-row .nm{font-weight:600}
+.sort-row .mk{font-family:var(--mono);font-weight:700;text-align:center}
+.sort-row .seg button{padding:4px 9px;font-size:.84rem}
+.sort-row.ok{border-color:var(--good)} .sort-row.ko{border-color:var(--bad)}
+
+/* quiz */
+.q{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:10px}
+.q .opts{display:grid;gap:6px}
+.q .opts button{text-align:left;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 12px;border-radius:6px;cursor:pointer;font-size:.95rem}
+.q .opts button.right{border-color:var(--good);background:var(--green-soft)}
+.q .opts button.wrong{border-color:var(--bad);background:var(--rust-soft)}
+.q .fb{font-size:.92rem;color:var(--muted)}
+.score{font-family:var(--display);font-size:1.6rem;font-weight:700}
+footer{border-top:1px solid var(--line);padding-top:18px;font-size:.9rem;color:var(--muted);display:grid;gap:8px}
+footer ul{margin:0;padding-left:18px}
+
+@media (max-width:980px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:0;padding-inline:16px}
+  nav.rail{flex-direction:row;overflow-x:auto;gap:4px;background:var(--paper);border-bottom:1px solid var(--line);padding-block:10px;z-index:5;margin-inline:-16px;padding-inline:16px}
+  .brand{display:none}
+  nav.rail a{grid-template-columns:auto auto;gap:6px;white-space:nowrap;flex:0 0 auto}
+  .hero,.split{grid-template-columns:minmax(0,1fr)}
+  main{gap:56px}
+}
+@media (max-width:520px){ .sort-row{grid-template-columns:1fr auto;} .sort-row .nm{grid-column:1/-1} body{font-size:16px} }
+@media (prefers-reduced-motion:reduce){ html{scroll-behavior:auto} }
+html{scroll-behavior:smooth}
+</style>
+
+<div class="wrap">
+<nav class="rail" aria-label="Módulos">
+  <div class="brand"><b>EPAVE</b> · UFCD Robótica I</div>
+  <a href="#inicio"><span>00</span>Início</a>
+  <a href="#classificar"><span>01</span>Classificar robôs</a>
+  <a href="#desempenho"><span>02</span>Precisão</a>
+  <a href="#estabilidade"><span>03</span>Estabilidade</a>
+  <a href="#cinematica"><span>04</span>Tração diferencial</a>
+  <a href="#sensores"><span>05</span>Sensores</a>
+  <a href="#atuadores"><span>06</span>Atuadores</a>
+  <a href="#controlo"><span>07</span>Controlo PID</a>
+  <a href="#revisao"><span>08</span>Revisão</a>
+</nav>
+
+<main>
+<!-- ============ 00 -->
+<section id="inicio" class="hero">
+  <div style="display:grid;gap:18px">
+    <div class="eyebrow">UFCD Robótica I · 35 h</div>
+    <h1>Laboratório de <em>Robótica</em> I</h1>
+    <p class="lede">A apresentação da UFCD em versão para mexer: cada módulo tem uma bancada de ensaio onde pode mudar parâmetros e ver o robô responder.</p>
+    <p>Comece aqui: mova o rato (ou o dedo) sobre o desenho. O braço de duas juntas de rotação calcula, em tempo real, os ângulos necessários para chegar ao ponto. Chama-se <strong>cinemática inversa</strong>.</p>
+    <div class="meta"><span>Formador: Glauco Barbosa</span><span>8 módulos</span><span>Português (PT)</span></div>
+  </div>
+  <div>
+    <canvas id="ik" width="640" height="480" aria-label="Braço robótico de duas juntas que segue o ponteiro"></canvas>
+    <div class="hero-cap"><span id="ikA">θ1 = 0°  θ2 = 0°</span><span id="ikP">x = 0,00 m  y = 0,00 m</span></div>
+  </div>
+</section>
+
+<!-- ============ 01 -->
+<section id="classificar">
+  <div class="eyebrow">Módulo 01</div>
+  <h2>Classificar robôs</h2>
+  <p class="lede">Um robô pode ser classificado pela mobilidade da base, pela estrutura cinemática, pela geometria do espaço de trabalho, pelos graus de liberdade (GdL), pelo tipo de acionamento e pelo tipo de controlo. Nos robôs fixos, as três primeiras juntas (o braço) dão o nome à estrutura: <span class="k">R</span> = rotação, <span class="k">P</span> = prismática (deslizante).</p>
+  <div class="bench">
+    <div class="bench-head"><h3>Explorador de estruturas cinemáticas</h3><span class="tag" id="stView">Vista lateral</span></div>
+    <div class="seg" id="stSel" role="group" aria-label="Estrutura"></div>
+    <div class="split">
+      <canvas id="stCv" width="640" height="440" aria-label="Desenho da estrutura e do espaço de trabalho"></canvas>
+      <div class="controls">
+        <div><span class="pill good" id="stCode">PPP</span></div>
+        <p id="stDesc"></p>
+        <div id="stCtl" class="controls"></div>
+        <p class="note">Os pontos claros mostram o <strong>espaço de trabalho</strong> no plano do desenho: todos os pontos que o órgão terminal consegue alcançar com os limites das juntas.</p>
+      </div>
+    </div>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Estrutura</th><th>Braço</th><th>Espaço de trabalho</th><th>Aplicação típica</th></tr></thead>
+    <tbody>
+      <tr><td>Cartesiano (pórtico)</td><td class="k">PPP</td><td>Paralelepípedo</td><td>Impressão 3D, CNC, paletização em pórtico</td></tr>
+      <tr><td>Cilíndrico</td><td class="k">RPP</td><td>Cilindro</td><td>Carga e descarga de máquinas</td></tr>
+      <tr><td>Esférico (polar)</td><td class="k">RRP</td><td>Porção de esfera</td><td>Soldadura por pontos (modelos clássicos)</td></tr>
+      <tr><td>SCARA</td><td class="k">RRP</td><td>Cilindro (vista de cima: coroa circular)</td><td>Montagem de eletrónica, pick-and-place</td></tr>
+      <tr><td>Articulado (antropomórfico)</td><td class="k">RRR</td><td>Porção de esfera, forma irregular</td><td>Soldadura por arco, pintura, manipulação</td></tr>
+      <tr><td>Delta (paralelo)</td><td class="k">3 braços em paralelo</td><td>Pequeno, em forma de cúpula</td><td>Embalagem alimentar a alta cadência</td></tr>
+    </tbody></table></div>
+  <p class="note">Para posicionar <em>e</em> orientar uma ferramenta no espaço são precisos 6 GdL: 3 de posição (braço) e 3 de orientação (punho).</p>
+</section>
+
+<!-- ============ 02 -->
+<section id="desempenho">
+  <div class="eyebrow">Módulo 02</div>
+  <h2>Repetibilidade e exatidão</h2>
+  <p class="lede">Repetibilidade é voltar sempre ao mesmo sítio. Exatidão é chegar ao sítio pedido. Um robô pode ser muito repetível e pouco exato: os pontos ficam juntos, mas ao lado do alvo. Os fabricantes medem ambas segundo a norma ISO 9283.</p>
+  <div class="bench">
+    <div class="bench-head"><h3>Ensaio de 30 movimentos ao mesmo ponto</h3><span class="tag">ISO 9283</span></div>
+    <div class="split">
+      <canvas id="tgCv" width="520" height="520" aria-label="Alvo com as posições atingidas"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="tgBias">Erro sistemático (calibração, folgas) <output id="tgBiasO"></output></label><input id="tgBias" type="range" min="0" max="0.6" step="0.01" value="0.35"></div>
+        <div class="ctl"><label for="tgSd">Dispersão aleatória <output id="tgSdO"></output></label><input id="tgSd" type="range" min="0.005" max="0.2" step="0.005" value="0.03"></div>
+        <div><button class="btn primary" id="tgRun">Repetir ensaio</button></div>
+        <dl class="readout">
+          <div><dt>Exatidão AP</dt><dd id="tgAP">–</dd></div>
+          <div><dt>Repetibilidade RP</dt><dd id="tgRP">–</dd></div>
+        </dl>
+        <div class="formula">AP = |baricentro − ponto pedido|<br>RP = l̄ + 3·σ<sub>l</sub></div>
+        <p class="note">l = distância de cada ponto ao baricentro dos pontos. Valores típicos de repetibilidade: ±0,01 mm (robôs pequenos) a ±0,1 mm (grande porte). A escala do alvo é em milímetros.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 -->
+<section id="estabilidade">
+  <div class="eyebrow">Módulo 03</div>
+  <h2>Estabilidade estática</h2>
+  <p class="lede">Um robô parado está em equilíbrio quando a projeção vertical do centro de gravidade (CG) cai dentro do <strong>polígono de suporte</strong>, a área delimitada pelos pontos de contacto com o solo. Num plano inclinado, a projeção desloca-se h·tan α para o lado da descida.</p>
+  <div class="bench">
+    <div class="bench-head"><h3>Vista de cima — arraste o CG</h3><span class="tag">Polígono de suporte</span></div>
+    <div class="split">
+      <canvas id="sbCv" width="600" height="440" aria-label="Polígono de suporte e centro de gravidade arrastável"></canvas>
+      <div class="controls">
+        <div class="seg" id="sbLegs" role="group" aria-label="Apoios">
+          <button aria-pressed="true" data-n="3">3 apoios</button><button aria-pressed="false" data-n="4">4 apoios</button><button aria-pressed="false" data-n="6">Hexápode (tripé)</button>
+        </div>
+        <div class="ctl"><label for="sbSlope">Inclinação do terreno α <output id="sbSlopeO"></output></label><input id="sbSlope" type="range" min="0" max="35" step="1" value="0"></div>
+        <div class="ctl"><label for="sbH">Altura do CG h <output id="sbHO"></output></label><input id="sbH" type="range" min="0.05" max="0.6" step="0.01" value="0.25"></div>
+        <dl class="readout">
+          <div><dt>Estado</dt><dd id="sbState">–</dd></div>
+          <div><dt>Margem</dt><dd id="sbMargin">–</dd></div>
+        </dl>
+        <p class="note">A margem de estabilidade é a menor distância entre a projeção do CG e a fronteira do polígono. No hexápode em marcha de tripé, só 3 das 6 patas estão no chão em cada instante.</p>
+      </div>
+    </div>
+  </div>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Configuração</th><th>Como funciona</th><th>Holonómico?</th><th>Exemplos</th></tr></thead>
+    <tbody>
+      <tr><td>Tração diferencial</td><td>2 rodas motrizes independentes + roda livre; vira pela diferença de velocidades</td><td>Não</td><td>Robôs aspiradores, AMR de armazém</td></tr>
+      <tr><td>Ackermann</td><td>Direção nas rodas dianteiras, como num automóvel</td><td>Não</td><td>Veículos autónomos, robôs agrícolas</td></tr>
+      <tr><td>Skid-steer / lagartas</td><td>Cada lado a velocidade diferente; vira por derrapagem</td><td>Não</td><td>Robôs de desminagem e de exterior</td></tr>
+      <tr><td>Omnidirecional (mecanum)</td><td>Rodas com roletes inclinados; anda em qualquer direção sem rodar</td><td>Sim</td><td>Plataformas industriais, robótica educativa</td></tr>
+    </tbody></table></div>
+</section>
+
+<!-- ============ 04 -->
+<section id="cinematica">
+  <div class="eyebrow">Módulo 04</div>
+  <h2>Tração diferencial</h2>
+  <p class="lede">Duas rodas motrizes independentes. A soma das velocidades faz o robô avançar; a diferença faz o robô rodar. Com estas equações, e contando as voltas das rodas, o robô estima onde está (odometria).</p>
+  <div class="bench">
+    <div class="bench-head"><h3>Simulador — arena de 6 m × 4 m</h3>
+      <div class="seg" id="ddPre"><button data-p="reta">Linha reta</button><button data-p="curva">Curva</button><button data-p="rodar">Rodar no lugar</button><button data-p="tras">Marcha-atrás</button><button id="ddReset">Reiniciar</button></div></div>
+    <div class="split">
+      <canvas id="ddCv" width="660" height="440" aria-label="Arena com o robô e o rasto"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="ddR">Velocidade da roda direita <output id="ddRO"></output></label><input id="ddR" type="range" min="-15" max="15" step="0.5" value="10"></div>
+        <div class="ctl"><label for="ddL">Velocidade da roda esquerda <output id="ddLO"></output></label><input id="ddL" type="range" min="-15" max="15" step="0.5" value="6"></div>
+        <div class="ctl"><label for="ddRad">Raio da roda r <output id="ddRadO"></output></label><input id="ddRad" type="range" min="0.02" max="0.1" step="0.005" value="0.05"></div>
+        <div class="ctl"><label for="ddHalf">Semidistância entre rodas L <output id="ddHalfO"></output></label><input id="ddHalf" type="range" min="0.06" max="0.25" step="0.01" value="0.15"></div>
+        <dl class="readout">
+          <div><dt>v</dt><dd id="ddV">–</dd></div>
+          <div><dt>ω</dt><dd id="ddW">–</dd></div>
+          <div><dt>Raio da curva</dt><dd id="ddRc">–</dd></div>
+          <div><dt>Pose (x, y, θ)</dt><dd id="ddPose" style="font-size:.95rem">–</dd></div>
+        </dl>
+        <div class="formula" id="ddF"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 -->
+<section id="sensores">
+  <div class="eyebrow">Módulo 05</div>
+  <h2>Sensores</h2>
+  <p class="lede">Os sensores dão ao robô a perceção de si próprio (<strong>proprioceptivos</strong>) e do ambiente (<strong>exteroceptivos</strong>). Também se dividem em <strong>passivos</strong>, que só medem, e <strong>ativos</strong>, que emitem energia e medem o retorno.</p>
+  <div class="bench">
+    <div class="bench-head"><h3>Exercício — classifique cada sensor</h3><span class="tag">Siegwart et al., 2011</span></div>
+    <div class="sort" id="sortList"></div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="sortCheck">Verificar</button><span id="sortRes" class="note"></span></div>
+  </div>
+  <div class="bench">
+    <div class="bench-head"><h3>Encoder incremental em quadratura</h3><span class="tag">Canais A e B a 90°</span></div>
+    <div class="split">
+      <canvas id="encCv" width="640" height="380" aria-label="Disco do encoder e sinais A e B"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="encSpd">Velocidade de rotação <output id="encSpdO"></output></label><input id="encSpd" type="range" min="-1" max="1" step="0.05" value="0.25"></div>
+        <div class="ctl"><label for="encPpr">Impulsos por volta (PPR)</label>
+          <select id="encPpr"><option>100</option><option>360</option><option selected>1000</option><option>2048</option></select></div>
+        <div class="seg" id="encMul" role="group" aria-label="Modo de leitura"><button data-m="1" aria-pressed="false">×1</button><button data-m="2" aria-pressed="false">×2</button><button data-m="4" aria-pressed="true">×4 (quadratura)</button></div>
+        <div class="ctl"><label for="encRad">Raio da roda <output id="encRadO"></output></label><input id="encRad" type="range" min="0.02" max="0.15" step="0.005" value="0.05"></div>
+        <dl class="readout">
+          <div><dt>Contagens/volta</dt><dd id="encCpr">–</dd></div>
+          <div><dt>Resolução</dt><dd id="encRes">–</dd></div>
+          <div><dt>Contador</dt><dd id="encCnt">0</dd></div>
+          <div><dt>Distância</dt><dd id="encDist">–</dd></div>
+        </dl>
+        <p class="note">Se A está adiantado em relação a B, a roda gira num sentido; se B está adiantado, gira no outro. O desenho mostra menos ranhuras do que o PPR real, para ser legível.</p>
+      </div>
+    </div>
+  </div>
+  <div class="cards">
+    <div class="card"><h3>LiDAR</h3><p>Mede distâncias por laser (tempo de voo) em 2D ou 3D. É a base do mapeamento nos robôs móveis autónomos (AMR).</p></div>
+    <div class="card"><h3>IMU</h3><p>Acelerómetro + giroscópio (+ magnetómetro) num só componente: acelerações, rotações e orientação.</p></div>
+    <div class="card"><h3>GNSS (GPS)</h3><p>Posição global no exterior; com correção RTK chega ao centímetro. Funciona mal em interiores.</p></div>
+    <div class="card"><h3>Câmaras</h3><p>Monoculares, estéreo e de profundidade (RGB-D, ToF). Permitem visão por computador.</p></div>
+  </div>
+</section>
+
+<!-- ============ 06 -->
+<section id="atuadores">
+  <div class="eyebrow">Módulo 06</div>
+  <h2>Atuadores</h2>
+  <p class="lede">Os atuadores convertem energia elétrica, pneumática ou hidráulica em movimento. A maioria dos robôs industriais atuais é elétrica: servomotores sem escovas com redutores (harmonic drive nos punhos e cobots, cicloidal nos eixos principais).</p>
+  <div class="bench">
+    <div class="bench-head"><h3>Que atuador escolher?</h3><span class="tag">Escolha uma aplicação</span></div>
+    <div class="seg" id="acSel" role="group" aria-label="Aplicação"></div>
+    <p id="acWhy"></p>
+    <div class="tablewrap"><table id="acTab">
+      <thead><tr><th>Critério</th><th data-c="e">Elétrico</th><th data-c="p">Pneumático</th><th data-c="h">Hidráulico</th></tr></thead>
+      <tbody>
+        <tr><td>Capacidade de carga</td><td data-c="e">Pequena a muito grande (&gt; 1 t)</td><td data-c="p">Pequena</td><td data-c="h">Muito grande</td></tr>
+        <tr><td>Relação força / peso</td><td data-c="e">Média a alta</td><td data-c="p">Média</td><td data-c="h">Muito alta</td></tr>
+        <tr><td>Precisão / repetibilidade</td><td data-c="e">Alta</td><td data-c="p">Baixa (o ar é compressível)</td><td data-c="h">Média a alta (servoválvulas)</td></tr>
+        <tr><td>Velocidade</td><td data-c="e">Alta</td><td data-c="p">Alta (movimentos ponto a ponto)</td><td data-c="h">Média a alta</td></tr>
+        <tr><td>Manutenção / limpeza</td><td data-c="e">Baixa / limpo</td><td data-c="p">Baixa (exige ar comprimido)</td><td data-c="h">Elevada (fugas de óleo)</td></tr>
+        <tr><td>Custo</td><td data-c="e">Médio</td><td data-c="p">Baixo</td><td data-c="h">Alto</td></tr>
+      </tbody></table></div>
+  </div>
+</section>
+
+<!-- ============ 07 -->
+<section id="controlo">
+  <div class="eyebrow">Módulo 07</div>
+  <h2>Controlo</h2>
+  <p class="lede">O controlador compara a posição pedida com a posição medida pelo encoder e corrige continuamente. Cada junta tem a sua malha fechada; um supervisor coordena todas (controlo hierárquico).</p>
+  <div class="cards">
+    <div class="card"><span class="k">1</span><h3>Sequência limitada</h3><p>Movimentos entre batentes mecânicos, sem servo-controlo.</p><p class="ex">Pega-e-coloca pneumático simples</p></div>
+    <div class="card"><span class="k">2</span><h3>Ponto a ponto (PTP)</h3><p>Memoriza pontos; o caminho entre eles não é controlado com rigor.</p><p class="ex">Soldadura por pontos, paletização</p></div>
+    <div class="card"><span class="k">3</span><h3>Percurso contínuo (CP)</h3><p>Controla toda a trajetória e a velocidade, com eixos coordenados.</p><p class="ex">Soldadura por arco, pintura, cola</p></div>
+    <div class="card"><span class="k">4</span><h3>Controlo inteligente</h3><p>Adapta-se com sensores (visão, força) e decisões lógicas ou IA.</p><p class="ex">Montagem com visão, cobots, AMR</p></div>
+  </div>
+  <div class="bench">
+    <div class="bench-head"><h3>Afinar um PID — resposta de uma junta a um degrau de 1 rad</h3>
+      <div class="seg" id="pidPre"><button data-p="p">Só P</button><button data-p="pi">PI</button><button data-p="pid">PID afinado</button><button data-p="agr">Agressivo</button></div></div>
+    <div class="split">
+      <canvas id="pidCv" width="660" height="400" aria-label="Gráfico da posição da junta ao longo do tempo"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="kp">Kp (proporcional) <output id="kpO"></output></label><input id="kp" type="range" min="0" max="60" step="0.5" value="12"></div>
+        <div class="ctl"><label for="ki">Ki (integral) <output id="kiO"></output></label><input id="ki" type="range" min="0" max="60" step="0.5" value="0"></div>
+        <div class="ctl"><label for="kd">Kd (derivativo) <output id="kdO"></output></label><input id="kd" type="range" min="0" max="12" step="0.1" value="1"></div>
+        <div class="ctl"><label for="dist">Carga na junta (perturbação) <output id="distO"></output></label><input id="dist" type="range" min="0" max="8" step="0.5" value="4"></div>
+        <dl class="readout">
+          <div><dt>Sobre-elevação</dt><dd id="pidOS">–</dd></div>
+          <div><dt>Estabelecimento (2%)</dt><dd id="pidTs">–</dd></div>
+          <div><dt>Erro final</dt><dd id="pidEss">–</dd></div>
+        </dl>
+        <div class="formula">u(t) = Kp·e + Ki·∫e dt + Kd·de/dt</div>
+        <p class="note">P reage ao erro atual; I acumula o erro e elimina o desvio causado pela carga; D amortece as oscilações. Modelo: J·θ̈ + b·θ̇ = u − carga, com J = 1 e b = 1.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 -->
+<section id="revisao">
+  <div class="eyebrow">Módulo 08</div>
+  <h2>Questões de revisão</h2>
+  <p class="lede">Dez perguntas sobre toda a UFCD. Cada resposta mostra a explicação.</p>
+  <div id="quiz" style="display:grid;gap:14px"></div>
+  <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap"><span class="score" id="qScore">0 / 10</span><button class="btn" id="qReset">Recomeçar</button></div>
+  <footer>
+    <strong>Referências</strong>
+    <ul>
+      <li>Craig, J. J. (2018). Introduction to Robotics: Mechanics and Control (4.ª ed.). Pearson.</li>
+      <li>Siegwart, R., Nourbakhsh, I. R. &amp; Scaramuzza, D. (2011). Introduction to Autonomous Mobile Robots (2.ª ed.). MIT Press.</li>
+      <li>Spong, M. W., Hutchinson, S. &amp; Vidyasagar, M. (2020). Robot Modeling and Control (2.ª ed.). Wiley.</li>
+      <li>ISO 9283 (desempenho de manipuladores) · ISO 10218-1/-2 · ISO/TS 15066 (robôs colaborativos).</li>
+    </ul>
+    <span>UFCD Robótica I (35 h) · EPAVE — Escola Profissional do Alto Ave · Formador: Glauco Barbosa</span>
+  </footer>
+</section>
+</main>
+</div>
+
+<script>
+(()=>{
+"use strict";
+const $=s=>document.querySelector(s);
+const fmt=(x,d=2)=>(Object.is(x,-0)?0:x).toFixed(d).replace('.',',').replace(/^-(0,0*)$/,'$1');
+const deg=r=>r*180/Math.PI, rad=d=>d*Math.PI/180;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- theme colours for canvas ---------- */
+let COL={};
+function readCols(){const cs=getComputedStyle(document.documentElement);
+  for(const k of ['paper','panel','ink','muted','line','grid','rust','rust-soft','green','green-soft','navy','bad','good','warn'])COL[k]=cs.getPropertyValue('--'+k).trim();}
+readCols();
+const redrawers=[];
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{readCols();redrawers.forEach(f=>f())});
+new MutationObserver(()=>{readCols();redrawers.forEach(f=>f())}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* canvas with DPR + resize; keeps the aspect from width/height attributes */
+function setup(cv,draw){
+  const ar=cv.height/cv.width; const st={ctx:cv.getContext('2d'),w:0,h:0};
+  const fit=()=>{const w=cv.clientWidth||cv.width; const h=Math.round(w*ar); const d=window.devicePixelRatio||1;
+    cv.width=Math.round(w*d); cv.height=Math.round(h*d); cv.style.height=h+'px'; st.w=w; st.h=h; st.ctx.setTransform(d,0,0,d,0,0); draw();};
+  new ResizeObserver(fit).observe(cv); redrawers.push(()=>{if(st.w)draw()}); return st;
+}
+function bindRange(id,fn,show){const el=$('#'+id),o=$('#'+id+'O');const up=()=>{if(o)o.textContent=show(+el.value);fn(+el.value)};el.addEventListener('input',up);up();return el;}
+function segToggle(box,onPick){box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!b.hasAttribute('aria-pressed'))return;
+  box.querySelectorAll('button[aria-pressed]').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));onPick(b)});}
+function line(c,pts,col,w){c.strokeStyle=col;c.lineWidth=w;c.lineCap='round';c.lineJoin='round';c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p[0],p[1]):c.moveTo(p[0],p[1]));c.stroke();}
+function dot(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,7);c.fill();}
+function label(c,t,x,y,col,al='left',f='12px'){c.fillStyle=col;c.font=`600 ${f} JetBrains Mono, monospace`;c.textAlign=al;c.textBaseline='middle';c.fillText(t,x,y);}
+
+/* ---------- nav highlight ---------- */
+const links=[...document.querySelectorAll('nav.rail a')];
+const io=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){links.forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id))}})},{rootMargin:'-40% 0px -55% 0px'});
+document.querySelectorAll('main section').forEach(s=>io.observe(s));
+
+/* ================= 00 hero IK ================= */
+{
+  const cv=$('#ik'); const L1=1.0,L2=0.8; let tgt=[1.1,0.6], user=false, t0=performance.now();
+  const S=setup(cv,draw);
+  function toWorld(px,py){const sc=S.w/4.4;return[(px-S.w*0.42)/sc,(S.h*0.78-py)/sc];}
+  function ik(x,y){let d=Math.hypot(x,y);const dmin=Math.abs(L1-L2)+1e-3,dmax=L1+L2-1e-3;if(d<dmin||d>dmax){const k=Math.min(Math.max(d,dmin),dmax)/(d||1);x*=k;y*=k;d=Math.hypot(x,y);}
+    const c2=(d*d-L1*L1-L2*L2)/(2*L1*L2); const t2=-Math.acos(Math.max(-1,Math.min(1,c2)));
+    const t1=Math.atan2(y,x)-Math.atan2(L2*Math.sin(t2),L1+L2*Math.cos(t2)); return [t1,t2,x,y];}
+  function draw(){const c=S.ctx,w=S.w,h=S.h,sc=w/4.4,ox=w*0.42,oy=h*0.78; c.clearRect(0,0,w,h);
+    // grid in metres
+    c.strokeStyle=COL.grid;c.lineWidth=1;for(let x=-2;x<=2.5;x+=0.5){c.beginPath();c.moveTo(ox+x*sc,0);c.lineTo(ox+x*sc,h);c.stroke()}for(let y=-1;y<=2.5;y+=0.5){c.beginPath();c.moveTo(0,oy-y*sc);c.lineTo(w,oy-y*sc);c.stroke()}
+    // workspace rings
+    c.setLineDash([4,5]);c.strokeStyle=COL.muted;c.lineWidth=1;[L1+L2,Math.abs(L1-L2)].forEach(r=>{c.beginPath();c.arc(ox,oy,r*sc,0,7);c.stroke()});c.setLineDash([]);
+    label(c,'alcance máx. 1,80 m',ox+(L1+L2)*sc*0.71+6,oy-(L1+L2)*sc*0.71-8,COL.muted,'left','11px');
+    // floor
+    c.fillStyle=COL.line;c.fillRect(0,oy+26,w,3);
+    const [t1,t2,x,y]=ik(tgt[0],tgt[1]);
+    const e=[ox+L1*Math.cos(t1)*sc,oy-L1*Math.sin(t1)*sc], p=[ox+x*sc,oy-y*sc];
+    // base
+    c.fillStyle=COL.navy;c.fillRect(ox-30,oy+4,60,22);dot(c,ox,oy,16,COL.navy);
+    line(c,[[ox,oy],e],COL.ink,18);line(c,[e,p],COL.ink,13);
+    line(c,[[ox,oy],e],COL.panel,4);line(c,[e,p],COL.panel,3);
+    dot(c,ox,oy,8,COL.rust);dot(c,e[0],e[1],7,COL.rust);
+    // gripper
+    const a=t1+t2; const g=(dx,dy)=>[p[0]+Math.cos(-a)*dx-Math.sin(-a)*dy,p[1]+Math.sin(-a)*dx+Math.cos(-a)*dy];
+    line(c,[g(0,-12),g(0,12)],COL.ink,5);line(c,[g(0,-12),g(16,-10)],COL.ink,4);line(c,[g(0,12),g(16,10)],COL.ink,4);
+    // target
+    const tp=[ox+tgt[0]*sc,oy-tgt[1]*sc]; c.strokeStyle=COL.rust;c.lineWidth=1.5;c.beginPath();c.arc(tp[0],tp[1],9,0,7);c.stroke();line(c,[[tp[0]-14,tp[1]],[tp[0]+14,tp[1]]],COL.rust,1.2);line(c,[[tp[0],tp[1]-14],[tp[0],tp[1]+14]],COL.rust,1.2);
+    // angle arcs
+    c.strokeStyle=COL.green;c.lineWidth=2;c.beginPath();c.arc(ox,oy,34,-t1,0,t1<0);c.stroke();
+    label(c,'θ1',ox+40,oy-14,COL.green);label(c,'θ2',e[0]+14,e[1]-16,COL.green);
+    $('#ikA').textContent=`θ1 = ${fmt(deg(t1),0)}°   θ2 = ${fmt(deg(t2),0)}°`;
+    $('#ikP').textContent=`x = ${fmt(x)} m   y = ${fmt(y)} m`;
+  }
+  const mv=ev=>{const r=cv.getBoundingClientRect();tgt=toWorld(ev.clientX-r.left,ev.clientY-r.top);user=true;draw();};
+  cv.addEventListener('pointermove',mv);cv.addEventListener('pointerdown',mv);
+  cv.addEventListener('pointerleave',()=>{user=false;t0=performance.now()});
+  function loop(t){if(!user&&!reduce){const s=(t-t0)/1000;tgt=[0.55+0.75*Math.cos(s*0.7),0.75+0.45*Math.sin(s*1.4)];draw();}requestAnimationFrame(loop);}
+  requestAnimationFrame(loop);
+}
+
+/* ================= 01 structures ================= */
+{
+  const R=rad;
+  const ST={
+    PPP:{code:'PPP',name:'Cartesiano',view:'Vista lateral (plano x–z)',desc:'Três juntas prismáticas segundo X, Y e Z. Movimentos lineares fáceis de programar e muito rígidos; ocupa muito espaço em relação ao volume útil.',
+      j:[{n:'x',l:'Junta 1 — deslocamento x',t:'P',min:0.2,max:1.6,v:0.9},{n:'z',l:'Junta 3 — altura z',t:'P',min:0.15,max:1.0,v:0.5},{n:'y',l:'Junta 2 — profundidade y (fora do plano)',t:'P',min:0,max:0.8,v:0.4,out:true}],
+      fk:q=>({links:[[q.x,1.25],[q.x,q.z]],ee:[q.x,q.z],extra:'gantry'}),ws:['x','z']},
+    RPP:{code:'RPP',name:'Cilíndrico',view:'Vista de cima (plano x–y)',desc:'Uma junta de rotação na base e duas prismáticas (vertical e radial). O espaço de trabalho é um cilindro oco.',
+      j:[{n:'th',l:'Junta 1 — rotação da base θ',t:'R',min:-150,max:150,v:35},{n:'r',l:'Junta 3 — extensão radial r',t:'P',min:0.35,max:1.2,v:0.85},{n:'z',l:'Junta 2 — altura z (fora do plano)',t:'P',min:0,max:1,v:0.5,out:true}],
+      fk:q=>{const a=R(q.th),rin=0.35;return{links:[[0,0],[rin*Math.cos(a),rin*Math.sin(a)],[q.r*Math.cos(a),q.r*Math.sin(a)]],ee:[q.r*Math.cos(a),q.r*Math.sin(a)],extra:'baseTop'}},ws:['th','r']},
+    RRP:{code:'RRP',name:'Esférico',view:'Vista lateral (plano r–z)',desc:'Duas juntas de rotação (base e elevação) e uma prismática que estende o braço. O espaço de trabalho é uma porção de esfera.',
+      j:[{n:'b',l:'Junta 2 — elevação β',t:'R',min:-35,max:65,v:20},{n:'r',l:'Junta 3 — extensão r',t:'P',min:0.45,max:1.3,v:0.9},{n:'phi',l:'Junta 1 — rotação da base (fora do plano)',t:'R',min:-180,max:180,v:0,out:true}],
+      fk:q=>{const a=R(q.b),h=0.55;return{links:[[0,0],[0,h],[0.4*Math.cos(a),h+0.4*Math.sin(a)],[q.r*Math.cos(a),h+q.r*Math.sin(a)]],ee:[q.r*Math.cos(a),h+q.r*Math.sin(a)],extra:'baseSide'}},ws:['b','r']},
+    SCARA:{code:'RRP',name:'SCARA',view:'Vista de cima (plano x–y)',desc:'Duas juntas de rotação com eixos verticais paralelos e uma prismática vertical. Rígido na vertical e complacente no plano: ideal para inserir componentes.',
+      j:[{n:'t1',l:'Junta 1 — ombro θ1',t:'R',min:-130,max:130,v:30},{n:'t2',l:'Junta 2 — cotovelo θ2',t:'R',min:-145,max:145,v:60},{n:'z',l:'Junta 3 — descida z (fora do plano)',t:'P',min:0,max:0.3,v:0.1,out:true}],
+      fk:q=>{const a=R(q.t1),b=R(q.t1+q.t2),l1=0.7,l2=0.55;const e=[l1*Math.cos(a),l1*Math.sin(a)];return{links:[[0,0],e,[e[0]+l2*Math.cos(b),e[1]+l2*Math.sin(b)]],ee:[e[0]+l2*Math.cos(b),e[1]+l2*Math.sin(b)],extra:'baseTop'}},ws:['t1','t2']},
+    RRR:{code:'RRR',name:'Articulado',view:'Vista lateral (plano r–z)',desc:'Três juntas de rotação, como um braço humano: base, ombro e cotovelo. Com o punho (mais 3 juntas) chega aos 6 GdL. É o robô industrial mais comum.',
+      j:[{n:'s',l:'Junta 2 — ombro',t:'R',min:-30,max:140,v:60},{n:'e',l:'Junta 3 — cotovelo',t:'R',min:-160,max:0,v:-80},{n:'phi',l:'Junta 1 — rotação da base (fora do plano)',t:'R',min:-180,max:180,v:0,out:true}],
+      fk:q=>{const h=0.45,l1=0.8,l2=0.7,a=R(q.s),b=R(q.s+q.e);const e=[l1*Math.cos(a),h+l1*Math.sin(a)];return{links:[[0,0],[0,h],e,[e[0]+l2*Math.cos(b),e[1]+l2*Math.sin(b)]],ee:[e[0]+l2*Math.cos(b),e[1]+l2*Math.sin(b)],extra:'baseSide'}},ws:['s','e']},
+  };
+  let cur='PPP', q={}, wsPts=[], bounds;
+  const S=setup($('#stCv'),draw);
+  const sel=$('#stSel');
+  Object.entries(ST).forEach(([k,s],i)=>{const b=document.createElement('button');b.textContent=`${s.name} · ${s.code}`;b.dataset.k=k;b.setAttribute('aria-pressed',i?'false':'true');sel.appendChild(b)});
+  segToggle(sel,b=>pick(b.dataset.k));
+  function pick(k){cur=k;const s=ST[k];q={};s.j.forEach(j=>q[j.n]=j.v);
+    $('#stCode').textContent=s.code;$('#stDesc').textContent=s.desc;$('#stView').textContent=s.view;
+    const box=$('#stCtl');box.innerHTML='';
+    s.j.forEach(j=>{const d=document.createElement('div');d.className='ctl';const id='st_'+k+'_'+j.n;
+      d.innerHTML=`<label for="${id}">${j.l} <output id="${id}O"></output></label><input id="${id}" type="range" min="${j.min}" max="${j.max}" step="${j.t==='R'?1:0.01}" value="${j.v}">`;box.appendChild(d);
+      bindRange(id,v=>{q[j.n]=v;draw()},v=>j.t==='R'?`${fmt(v,0)}°`:`${fmt(v)} m`);});
+    // workspace sampling over in-plane joints
+    wsPts=[];const [a,b]=s.ws.map(n=>s.j.find(j=>j.n===n));const qq={...q};
+    for(let i=0;i<=46;i++)for(let k2=0;k2<=46;k2++){qq[a.n]=a.min+(a.max-a.min)*i/46;qq[b.n]=b.min+(b.max-b.min)*k2/46;wsPts.push(s.fk(qq).ee)}
+    let xs=wsPts.map(p=>p[0]).concat([0,-0.25]),ys=wsPts.map(p=>p[1]).concat([0,k==='PPP'?1.35:0]);
+    if(s.view.startsWith('Vista de cima')){xs.push(-0.4);ys.push(-0.4)}
+    bounds=[Math.min(...xs)-0.2,Math.max(...xs)+0.2,Math.min(...ys)-0.2,Math.max(...ys)+0.2];
+    draw();}
+  function draw(){if(!bounds)return;const c=S.ctx,w=S.w,h=S.h,s=ST[cur];c.clearRect(0,0,w,h);
+    const sc=Math.min(w/(bounds[1]-bounds[0]),h/(bounds[3]-bounds[2]));const ox=(w-(bounds[1]-bounds[0])*sc)/2-bounds[0]*sc,oy=h-((h-(bounds[3]-bounds[2])*sc)/2-bounds[2]*sc);
+    const P=p=>[ox+p[0]*sc,oy-p[1]*sc];
+    // grid 0.25 m
+    c.strokeStyle=COL.grid;c.lineWidth=1;for(let x=Math.ceil(bounds[0]*4)/4;x<=bounds[1];x+=0.25){const X=ox+x*sc;c.beginPath();c.moveTo(X,0);c.lineTo(X,h);c.stroke()}
+    for(let y=Math.ceil(bounds[2]*4)/4;y<=bounds[3];y+=0.25){const Y=oy-y*sc;c.beginPath();c.moveTo(0,Y);c.lineTo(w,Y);c.stroke()}
+    c.fillStyle=COL.green;c.globalAlpha=.28;wsPts.forEach(p=>{const [X,Y]=P(p);c.fillRect(X-1.5,Y-1.5,3,3)});c.globalAlpha=1;
+    const f=s.fk(q);
+    if(f.extra==='gantry'){const [a]=[P([0,0])],b=P([1.8,0]),t1=P([0,1.25]),t2=P([1.8,1.25]);line(c,[a,t1,t2,b],COL.navy,6);line(c,[[a[0]-10,a[1]],[b[0]+10,b[1]]],COL.muted,3);
+      const cr=P([q.x,1.25]);c.fillStyle=COL.navy;c.fillRect(cr[0]-16,cr[1]-10,32,20);}
+    if(f.extra==='baseSide'){const b=P([0,0]);c.fillStyle=COL.navy;c.fillRect(b[0]-24,b[1],48,12);line(c,[[b[0]-60,b[1]+12],[b[0]+60,b[1]+12]],COL.muted,3);}
+    if(f.extra==='baseTop'){const b=P([0,0]);dot(c,b[0],b[1],18,COL.navy);}
+    const pts=f.links.map(P);
+    const isP=(s.code==='RPP'||cur==='RRP');
+    if(cur==='PPP'){line(c,pts,COL.ink,12);line(c,pts,COL.panel,3);}
+    else if(isP){line(c,pts.slice(0,-1),COL.ink,16);line(c,pts.slice(-2),COL.rust,9);line(c,pts.slice(0,-1),COL.panel,3);}
+    else{line(c,pts,COL.ink,14);line(c,pts,COL.panel,3);}
+    pts.slice(cur==='PPP'?1:0,-1).forEach(p=>dot(c,p[0],p[1],6,COL.rust));
+    const e=P(f.ee);dot(c,e[0],e[1],7,COL.rust);c.strokeStyle=COL.rust;c.lineWidth=2;c.beginPath();c.arc(e[0],e[1],12,0,7);c.stroke();
+    label(c,`(${fmt(f.ee[0])} ; ${fmt(f.ee[1])}) m`,Math.min(e[0]+16,w-120),e[1]-18,COL.ink,'left','11px');
+    // out-of-plane joint gauge
+    const oj=s.j.find(j=>j.out);label(c,`${oj.n==='phi'?'base':oj.n} = ${oj.t==='R'?fmt(q[oj.n],0)+'°':fmt(q[oj.n])+' m'} (fora do plano)`,12,16,COL.muted,'left','11px');
+  }
+  pick('PPP');
+}
+
+/* ================= 02 repeatability ================= */
+{
+  const S=setup($('#tgCv'),draw); let pts=[], bias=0.35, sd=0.03, ang=0.7;
+  function gauss(){let u=0,v=0;while(!u)u=Math.random();while(!v)v=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+  function run(){ang=Math.random()*Math.PI*2;pts=[];for(let i=0;i<30;i++)pts.push([bias*Math.cos(ang)+sd*gauss(),bias*Math.sin(ang)+sd*gauss()]);calc();draw();}
+  function calc(){const cx=pts.reduce((a,p)=>a+p[0],0)/pts.length,cy=pts.reduce((a,p)=>a+p[1],0)/pts.length;
+    const l=pts.map(p=>Math.hypot(p[0]-cx,p[1]-cy)),lm=l.reduce((a,b)=>a+b,0)/l.length,sl=Math.sqrt(l.reduce((a,b)=>a+(b-lm)**2,0)/(l.length-1));
+    $('#tgAP').textContent=fmt(Math.hypot(cx,cy),3)+' mm';$('#tgRP').textContent='±'+fmt(lm+3*sl,3)+' mm';S.c=[cx,cy];S.rp=lm+3*sl;}
+  function draw(){const c=S.ctx,w=S.w,h=S.h,cx0=w/2,cy0=h/2,sc=Math.min(w,h)/2/0.85;c.clearRect(0,0,w,h);
+    [0.8,0.6,0.4,0.2].forEach((r,i)=>{c.fillStyle=i%2?COL.panel:COL.paper;c.beginPath();c.arc(cx0,cy0,r*sc,0,7);c.fill();c.strokeStyle=COL.line;c.lineWidth=1;c.stroke();label(c,fmt(r,1),cx0+r*sc+3,cy0-8,COL.muted,'left','10px')});
+    line(c,[[cx0-0.85*sc,cy0],[cx0+0.85*sc,cy0]],COL.line,1);line(c,[[cx0,cy0-0.85*sc],[cx0,cy0+0.85*sc]],COL.line,1);
+    dot(c,cx0,cy0,5,COL.ink);label(c,'ponto pedido',cx0+8,cy0+14,COL.ink,'left','11px');
+    pts.forEach(p=>dot(c,cx0+p[0]*sc,cy0-p[1]*sc,3.5,COL.rust));
+    if(S.c){const X=cx0+S.c[0]*sc,Y=cy0-S.c[1]*sc;c.strokeStyle=COL.green;c.lineWidth=2;c.setLineDash([5,4]);c.beginPath();c.arc(X,Y,S.rp*sc,0,7);c.stroke();c.setLineDash([]);
+      line(c,[[cx0,cy0],[X,Y]],COL.navy,1.5);c.strokeStyle=COL.green;c.beginPath();c.moveTo(X-6,Y);c.lineTo(X+6,Y);c.moveTo(X,Y-6);c.lineTo(X,Y+6);c.stroke();}
+  }
+  bindRange('tgBias',v=>{bias=v;if(S)run()},v=>fmt(v,2)+' mm');
+  bindRange('tgSd',v=>{sd=v;if(S)run()},v=>'σ = '+fmt(v,3)+' mm');
+  $('#tgRun').addEventListener('click',run);run();
+}
+
+/* ================= 03 stability ================= */
+{
+  const S=setup($('#sbCv'),draw); let n=3, cg=[0.05,0.0], slope=0, H=0.25, drag=false;
+  const polys={3:[[-0.35,-0.3],[0.4,-0.3],[0.02,0.38]],4:[[-0.38,-0.3],[0.38,-0.3],[0.38,0.3],[-0.38,0.3]],6:[[-0.38,-0.32],[0.4,0],[-0.38,0.32]]};
+  const legs6=[[-0.38,-0.32],[0,-0.36],[0.4,-0.32],[-0.4,0.32],[0,0.36],[0.38,0.32]];
+  function margin(p,poly){let m=Infinity;for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length];const ex=b[0]-a[0],ey=b[1]-a[1],L=Math.hypot(ex,ey);const cross=(ex*(p[1]-a[1])-ey*(p[0]-a[0]))/L;m=Math.min(m,cross)}return m;}
+  function proj(){return[cg[0]+H*Math.tan(rad(slope)),cg[1]]}
+  function view(){const sc=Math.min(S.w/1.4,S.h/1.0);return{sc,ox:S.w/2,oy:S.h/2}}
+  function draw(){const c=S.ctx,w=S.w,h=S.h,{sc,ox,oy}=view();const P=p=>[ox+p[0]*sc,oy-p[1]*sc];c.clearRect(0,0,w,h);
+    c.strokeStyle=COL.grid;c.lineWidth=1;for(let x=-0.7;x<=0.7;x+=0.1){c.beginPath();c.moveTo(ox+x*sc,0);c.lineTo(ox+x*sc,h);c.stroke()}for(let y=-0.5;y<=0.5;y+=0.1){c.beginPath();c.moveTo(0,oy-y*sc);c.lineTo(w,oy-y*sc);c.stroke()}
+    // body outline
+    c.strokeStyle=COL.muted;c.setLineDash([6,5]);c.lineWidth=1.5;c.strokeRect(ox-0.45*sc,oy-0.4*sc,0.9*sc,0.8*sc);c.setLineDash([]);
+    const poly=polys[n];const m=margin(proj(),poly);const ok=m>0.03,lim=m>0&&!ok;
+    c.fillStyle=ok?COL['green-soft']:(m>0?COL['rust-soft']:COL['rust-soft']);c.strokeStyle=ok?COL.green:COL.rust;c.lineWidth=2;c.beginPath();poly.forEach((p,i)=>{const q=P(p);i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1])});c.closePath();c.fill();c.stroke();
+    if(n===6)legs6.forEach(p=>{const q=P(p);const on=poly.some(v=>v[0]===p[0]&&v[1]===p[1]);c.strokeStyle=COL.muted;c.lineWidth=1.5;c.beginPath();c.arc(q[0],q[1],8,0,7);c.stroke();if(on)dot(c,q[0],q[1],8,COL.ink)});
+    else poly.forEach(p=>{const q=P(p);dot(c,q[0],q[1],8,COL.ink)});
+    const g=P(cg),pj=P(proj());
+    if(slope>0){line(c,[g,pj],COL.navy,1.5);dot(c,g[0],g[1],6,COL.navy);label(c,'CG',g[0],g[1]-16,COL.navy,'center','11px');
+      // downhill arrow
+      line(c,[[w-110,h-24],[w-40,h-24]],COL.muted,2);line(c,[[w-48,h-30],[w-40,h-24],[w-48,h-18]],COL.muted,2);label(c,'descida',w-110,h-40,COL.muted,'left','11px');}
+    dot(c,pj[0],pj[1],10,ok?COL.green:COL.bad);c.strokeStyle=COL.panel;c.lineWidth=2;c.beginPath();c.arc(pj[0],pj[1],10,0,7);c.stroke();
+    label(c,slope>0?'projeção do CG':'CG (arraste)',pj[0]+14,pj[1]+16,COL.ink,'left','11px');
+    label(c,'escala: quadrícula = 10 cm',12,h-14,COL.muted,'left','11px');
+    $('#sbState').innerHTML=ok?'<span class="pill good">Estável</span>':lim?'<span class="pill warn">No limite</span>':'<span class="pill bad">Tomba</span>';
+    $('#sbMargin').textContent=fmt(m*1000,0)+' mm';
+  }
+  const cv=$('#sbCv');
+  const at=ev=>{const r=cv.getBoundingClientRect(),{sc,ox,oy}=view();return[(ev.clientX-r.left-ox)/sc,(oy-(ev.clientY-r.top))/sc]};
+  cv.addEventListener('pointerdown',ev=>{drag=true;cv.setPointerCapture(ev.pointerId);const p=at(ev);cg=[Math.max(-0.6,Math.min(0.6,p[0]-H*Math.tan(rad(slope)))),Math.max(-0.45,Math.min(0.45,p[1]))];draw()});
+  cv.addEventListener('pointermove',ev=>{if(!drag)return;const p=at(ev);cg=[Math.max(-0.6,Math.min(0.6,p[0]-H*Math.tan(rad(slope)))),Math.max(-0.45,Math.min(0.45,p[1]))];draw()});
+  cv.addEventListener('pointerup',()=>drag=false);
+  segToggle($('#sbLegs'),b=>{n=+b.dataset.n;draw()});
+  bindRange('sbSlope',v=>{slope=v;draw()},v=>v+'°');
+  bindRange('sbH',v=>{H=v;draw()},v=>fmt(v)+' m');
+}
+
+/* ================= 04 differential drive ================= */
+{
+  const S=setup($('#ddCv'),draw); let pR=10,pL=6,r=0.05,L=0.15, pose=[1.0,1.2,0], trail=[], last=null;
+  const W=6,Hh=4;
+  function vw(){return[r*(pR+pL)/2, r*(pR-pL)/(2*L)]}
+  function upd(){const [v,w]=vw();$('#ddV').textContent=fmt(v)+' m/s';$('#ddW').textContent=fmt(w)+' rad/s';
+    $('#ddRc').textContent=Math.abs(w)<1e-6?'∞ (reta)':Math.abs(v)<1e-6?'0 (no lugar)':fmt(Math.abs(v/w))+' m';
+    $('#ddF').innerHTML=`v = r·(φ̇R+φ̇L)/2 = ${fmt(r,3)}·(${fmt(pR,1)}+${fmt(pL,1)})/2 = <b>${fmt(v)}</b> m/s<br>ω = r·(φ̇R−φ̇L)/(2L) = ${fmt(r,3)}·(${fmt(pR,1)}−${fmt(pL,1)})/${fmt(2*L)} = <b>${fmt(w)}</b> rad/s`;}
+  function draw(){const c=S.ctx,w=S.w,h=S.h,sc=Math.min(w/W,h/Hh);c.clearRect(0,0,w,h);const P=(x,y)=>[x*sc,h-y*sc];
+    c.strokeStyle=COL.grid;c.lineWidth=1;for(let x=0;x<=W;x+=0.5){c.beginPath();c.moveTo(x*sc,0);c.lineTo(x*sc,h);c.stroke()}for(let y=0;y<=Hh;y+=0.5){c.beginPath();c.moveTo(0,h-y*sc);c.lineTo(w,h-y*sc);c.stroke()}
+    for(let x=1;x<W;x++)label(c,x+' m',x*sc+3,h-8,COL.muted,'left','10px');
+    c.strokeStyle=COL.rust;c.lineWidth=2;c.beginPath();let pen=false;trail.forEach(p=>{if(!p){pen=false;return}const q=P(p[0],p[1]);pen?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1]);pen=true});c.stroke();
+    const [x,y,th]=pose,ctr=P(x,y),R=Math.max((L+0.03)*sc,12);
+    c.save();c.translate(ctr[0],ctr[1]);c.rotate(-th);
+    c.fillStyle=COL.panel;c.strokeStyle=COL.ink;c.lineWidth=2;c.beginPath();c.arc(0,0,R,0,7);c.fill();c.stroke();
+    const wl=Math.max(2*r*sc,10),wt=Math.max(R*0.28,5);c.fillStyle=COL.ink;c.fillRect(-wl/2,-L*sc-wt/2-(R-L*sc)*0,wl,wt);c.fillRect(-wl/2,L*sc-wt/2,wl,wt);
+    line(c,[[0,0],[R*0.9,0]],COL.rust,3);line(c,[[R*0.6,-R*0.2],[R*0.9,0],[R*0.6,R*0.2]],COL.rust,3);
+    c.restore();
+  }
+  function step(dt){const [v,w]=vw();let [x,y,th]=pose;const n=8;for(let i=0;i<n;i++){x+=v*Math.cos(th)*dt/n;y+=v*Math.sin(th)*dt/n;th+=w*dt/n}
+    let wrap=false;if(x<0){x+=W;wrap=true}if(x>W){x-=W;wrap=true}if(y<0){y+=Hh;wrap=true}if(y>Hh){y-=Hh;wrap=true}
+    pose=[x,y,th];if(wrap)trail.push(null);trail.push([x,y]);if(trail.length>3000)trail.splice(0,trail.length-3000);
+    let a=((th%(2*Math.PI))+2*Math.PI)%(2*Math.PI);if(a>Math.PI)a-=2*Math.PI;$('#ddPose').textContent=`${fmt(x)} ; ${fmt(y)} m ; ${fmt(deg(a),0)}°`;}
+  function loop(t){if(last!==null){const dt=Math.min(0.05,(t-last)/1000);step(dt);draw()}last=t;requestAnimationFrame(loop)}
+  requestAnimationFrame(loop);
+  const sR=bindRange('ddR',v=>{pR=v;upd()},v=>fmt(v,1)+' rad/s'),sL=bindRange('ddL',v=>{pL=v;upd()},v=>fmt(v,1)+' rad/s');
+  bindRange('ddRad',v=>{r=v;upd()},v=>fmt(v,3)+' m');bindRange('ddHalf',v=>{L=v;upd();draw()},v=>fmt(v)+' m');
+  const set=(a,b)=>{sR.value=a;sL.value=b;sR.dispatchEvent(new Event('input'));sL.dispatchEvent(new Event('input'))};
+  $('#ddPre').addEventListener('click',e=>{const p=e.target.dataset.p;if(p==='reta')set(8,8);if(p==='curva')set(10,6);if(p==='rodar')set(6,-6);if(p==='tras')set(-6,-6)});
+  $('#ddReset').addEventListener('click',()=>{pose=[1.0,1.2,0];trail=[];draw()});
+}
+
+/* ================= 05 sensors sort ================= */
+{
+  const DATA=[['Encoder ótico','P','A','Mede a rotação da própria roda ou junta e emite luz (LED) através do disco.'],
+    ['Giroscópio / acelerómetro (IMU)','P','S','Mede o movimento do próprio robô sem emitir nada.'],
+    ['Bússola (magnetómetro)','E','S','Mede o campo magnético da Terra, que é exterior ao robô.'],
+    ['GNSS (GPS)','E','A','Os sinais são emitidos pelos satélites; por isso a classificação clássica considera-o ativo.'],
+    ['Ultrassons','E','A','Emite uma onda sonora e mede o eco.'],['LiDAR','E','A','Emite impulsos laser e mede o tempo de voo.'],
+    ['Câmara RGB','E','S','Capta a luz que já existe no ambiente.'],['Bumper (contacto)','E','S','Só deteta o toque físico com obstáculos.']];
+  const box=$('#sortList');const ans={};
+  DATA.forEach((d,i)=>{const row=document.createElement('div');row.className='sort-row';row.innerHTML=`<span class="nm">${d[0]}</span>
+    <div class="seg" data-i="${i}" data-k="pe"><button aria-pressed="false" data-v="P">Proprio</button><button aria-pressed="false" data-v="E">Extero</button></div>
+    <div class="seg" data-i="${i}" data-k="sa"><button aria-pressed="false" data-v="S">Passivo</button><button aria-pressed="false" data-v="A">Ativo</button></div><span class="mk" aria-live="polite"></span>`;box.appendChild(row);
+    row.querySelectorAll('.seg').forEach(s=>segToggle(s,b=>{ans[i+s.dataset.k]=b.dataset.v;row.classList.remove('ok','ko');row.querySelector('.mk').textContent='';row.title=''}));});
+  $('#sortCheck').addEventListener('click',()=>{let ok=0;DATA.forEach((d,i)=>{const row=box.children[i];const good=ans[i+'pe']===d[1]&&ans[i+'sa']===d[2];
+    row.classList.toggle('ok',good);row.classList.toggle('ko',!good);row.querySelector('.mk').textContent=good?'✓':'✗';row.querySelector('.mk').style.color=good?'var(--good)':'var(--bad)';row.title=d[3];if(good)ok++});
+    $('#sortRes').textContent=`${ok} de ${DATA.length} certos. Passe o rato sobre uma linha para ver a explicação.`;});
+}
+
+/* ================= 05 encoder ================= */
+{
+  const S=setup($('#encCv'),draw); let spd=0.25,ppr=1000,mul=4,rw=0.05,ang=0,count=0,hist=[],last=null;const SLOTS=16;
+  function upd(){const cpr=ppr*mul;$('#encCpr').textContent=cpr.toLocaleString('pt-PT');$('#encRes').textContent=fmt(360/cpr,mul===4&&ppr>=1000?3:2)+'°';}
+  function draw(){const c=S.ctx,w=S.w,h=S.h;c.clearRect(0,0,w,h);const R=Math.min(h*0.38,w*0.18),cx=R+24,cy=h/2;
+    c.fillStyle=COL.panel;c.strokeStyle=COL.ink;c.lineWidth=2;c.beginPath();c.arc(cx,cy,R,0,7);c.fill();c.stroke();
+    for(let i=0;i<SLOTS;i++){const a=ang+i*2*Math.PI/SLOTS;c.save();c.translate(cx,cy);c.rotate(-a);c.fillStyle=COL.ink;c.fillRect(R*0.68,-R*0.07,R*0.24,R*0.14);c.restore()}
+    dot(c,cx,cy,R*0.12,COL.navy);
+    // sensors A and B at 90° electrical (offset quarter slot)
+    const sA=-Math.PI/2, sB=sA+Math.PI*2/SLOTS/4;
+    [[sA,'A',COL.rust],[sB,'B',COL.green]].forEach(([a,n,col])=>{const x=cx+R*0.8*Math.cos(a),y=cy-R*0.8*Math.sin(a);dot(c,x,y,5,col);label(c,n,x+(n==='A'?-14:10),y-12,col,'center','12px')});
+    // waveforms
+    const x0=cx+R+36,x1=w-12,yA=h*0.3,yB=h*0.66,amp=h*0.12;
+    label(c,'A',x0-14,yA-amp/2,COL.rust,'center');label(c,'B',x0-14,yB-amp/2,COL.green,'center');
+    [[ 'a',yA,COL.rust],['b',yB,COL.green]].forEach(([k,y0,col])=>{c.strokeStyle=COL.line;c.lineWidth=1;c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y0);c.stroke();
+      c.strokeStyle=col;c.lineWidth=2.5;c.beginPath();hist.forEach((s,i)=>{const x=x1-(hist.length-1-i)*2;if(x<x0)return;const y=y0-(s[k]?amp:0);i&&x>x0?c.lineTo(x,y):c.moveTo(x,y)});c.stroke()});
+    label(c,'tempo →',x1,h-12,COL.muted,'right','11px');
+  }
+  function sig(a,off){const ph=((a*SLOTS/(2*Math.PI)+off)%1+1)%1;return ph<0.5}
+  function loop(t){if(last!==null){const dt=Math.min(0.05,(t-last)/1000);const da=spd*2*Math.PI*dt;ang+=da;count+=spd*dt*ppr*mul;
+      hist.push({a:sig(ang,0),b:sig(ang,-0.25)});if(hist.length>600)hist.shift();
+      $('#encCnt').textContent=Math.round(count).toLocaleString('pt-PT');$('#encDist').textContent=fmt(count/(ppr*mul)*2*Math.PI*rw,3)+' m';draw()}last=t;requestAnimationFrame(loop)}
+  requestAnimationFrame(loop);
+  bindRange('encSpd',v=>spd=v,v=>(v>0?'+':'')+fmt(v,2)+' volta/s');
+  bindRange('encRad',v=>rw=v,v=>fmt(v,3)+' m');
+  $('#encPpr').addEventListener('change',e=>{ppr=+e.target.value;count=0;upd()});
+  segToggle($('#encMul'),b=>{mul=+b.dataset.m;count=0;upd()});upd();
+}
+
+/* ================= 06 actuator chooser ================= */
+{
+  const APPS=[['Garra pick-and-place simples','p','Pneumático: barato, rápido e limpo. Abrir e fechar a garra é um movimento tudo-ou-nada, por isso a baixa precisão do ar não é problema.'],
+    ['Juntas de um cobot','e','Elétrico: servomotores sem escovas com harmonic drive dão precisão e permitem medir e limitar a força, o que a ISO/TS 15066 exige no contacto com pessoas.'],
+    ['Robô de soldadura por arco','e','Elétrico: o percurso contínuo exige trajetórias precisas e velocidade constante, que os servomotores controlam bem.'],
+    ['Braço de máquina de construção','h','Hidráulico: forças muito grandes num equipamento compacto e robusto ao exterior; a manutenção extra é aceitável.'],
+    ['Robô móvel de armazém (AMR)','e','Elétrico: funciona a baterias, é silencioso e não precisa de compressor nem de central hidráulica.'],
+    ['Paletização de sacos de 50 kg','e','Elétrico: os robôs de paletização atuais são elétricos, com cargas de centenas de quilos e boa repetibilidade.']];
+  const sel=$('#acSel');APPS.forEach((a,i)=>{const b=document.createElement('button');b.textContent=a[0];b.setAttribute('aria-pressed',i===1?'true':'false');b.dataset.i=i;sel.appendChild(b)});
+  const pick=i=>{const a=APPS[i];$('#acWhy').innerHTML=`<strong>Recomendado:</strong> ${a[2]}`;document.querySelectorAll('#acTab [data-c]').forEach(td=>td.classList.toggle('hl',td.dataset.c===a[1]))};
+  segToggle(sel,b=>pick(+b.dataset.i));pick(1);
+}
+
+/* ================= 07 PID ================= */
+{
+  const S=setup($('#pidCv'),draw); let kp=12,ki=0,kd=1,ld=4,res=null;const T=6,dt=0.002;
+  function sim(){let th=0,w=0,I=0,prev=0;const out=[];for(let t=0;t<=T;t+=dt){const e=1-th;I+=e*dt;const D=-(th-prev)/dt;prev=th;let u=kp*e+ki*I+kd*D;u=Math.max(-80,Math.min(80,u));
+      const acc=(u-1*w-ld);w+=acc*dt;th+=w*dt;out.push([t,th]);if(!isFinite(th))break}
+    const ys=out.map(p=>p[1]);const mx=Math.max(...ys);const os=Math.max(0,(mx-1)*100);
+    let ts=null;for(let i=out.length-1;i>=0;i--){if(Math.abs(out[i][1]-1)>0.02){ts=i===out.length-1?null:out[i+1][0];break}if(i===0)ts=0}
+    const ess=1-ys[ys.length-1];res={out,os,ts,ess};}
+  function draw(){if(!res)return;const c=S.ctx,w=S.w,h=S.h,pl=46,pr=14,pt=16,pb=34;c.clearRect(0,0,w,h);
+    const ymax=Math.max(1.6,Math.min(2.4,Math.max(...res.out.map(p=>p[1]))+0.1)),ymin=Math.min(0,...res.out.map(p=>p[1]));
+    const X=t=>pl+(w-pl-pr)*t/T,Y=v=>pt+(h-pt-pb)*(1-(v-ymin)/(ymax-ymin));
+    c.strokeStyle=COL.grid;c.lineWidth=1;for(let t=0;t<=T;t++){c.beginPath();c.moveTo(X(t),pt);c.lineTo(X(t),h-pb);c.stroke();label(c,t+' s',X(t),h-pb+16,COL.muted,'center','10px')}
+    for(let v=0;v<=ymax+1e-9;v+=0.5){c.beginPath();c.moveTo(pl,Y(v));c.lineTo(w-pr,Y(v));c.stroke();label(c,fmt(v,1),pl-6,Y(v),COL.muted,'right','10px')}
+    c.fillStyle=COL['green-soft'];c.fillRect(pl,Y(1.02),w-pl-pr,Y(0.98)-Y(1.02));
+    c.setLineDash([6,5]);line(c,[[X(0),Y(1)],[X(T),Y(1)]],COL.muted,1.5);c.setLineDash([]);label(c,'referência 1 rad',w-pr-4,Y(1)-10,COL.muted,'right','10px');
+    c.strokeStyle=COL.rust;c.lineWidth=2.5;c.beginPath();res.out.forEach((p,i)=>{if(i%4)return;const x=X(p[0]),y=Y(Math.max(ymin,Math.min(ymax,p[1])));i?c.lineTo(x,y):c.moveTo(x,y)});c.stroke();
+    label(c,'posição (rad)',pl,8,COL.muted,'left','10px');
+  }
+  function run(){sim();draw();$('#pidOS').textContent=fmt(res.os,1)+' %';$('#pidTs').textContent=res.ts===null?'> 6 s':fmt(res.ts,2)+' s';$('#pidEss').textContent=fmt(res.ess,3)+' rad';}
+  const sp=bindRange('kp',v=>{kp=v;run()},v=>fmt(v,1)),si=bindRange('ki',v=>{ki=v;run()},v=>fmt(v,1)),sd=bindRange('kd',v=>{kd=v;run()},v=>fmt(v,1));
+  bindRange('dist',v=>{ld=v;run()},v=>fmt(v,1)+' N·m');
+  const set=(a,b,d)=>{[[sp,a],[si,b],[sd,d]].forEach(([el,v])=>{el.value=v;el.dispatchEvent(new Event('input'))})};
+  $('#pidPre').addEventListener('click',e=>{const p=e.target.dataset.p;if(p==='p')set(12,0,1);if(p==='pi')set(12,10,1);if(p==='pid')set(30,25,7);if(p==='agr')set(55,40,0.5)});
+}
+
+/* ================= 08 quiz ================= */
+{
+  const Q=[
+    ['Qual é a notação e o espaço de trabalho de um robô cilíndrico?',['PPP — paralelepípedo','RPP — cilindro','RRP — porção de esfera','RRR — forma irregular'],1,'Uma rotação na base e duas juntas prismáticas (vertical e radial) varrem um cilindro.'],
+    ['Porque é que o SCARA é indicado para montagem?',['Tem 6 GdL','É rígido na vertical e complacente no plano horizontal','É hidráulico','Tem espaço de trabalho esférico'],1,'A complacência no plano ajuda a encaixar peças; a rigidez vertical aguenta a força de inserção.'],
+    ['Um robô volta sempre ao mesmo ponto, mas 0,5 mm ao lado do pedido. Ele é…',['Exato e pouco repetível','Repetível e pouco exato','Exato e repetível','Nem exato nem repetível'],1,'Pontos agrupados = boa repetibilidade; afastados do alvo = má exatidão.'],
+    ['Quantos GdL são precisos para posicionar e orientar uma ferramenta no espaço?',['3','4','6','7'],2,'3 para a posição (x, y, z) e 3 para a orientação.'],
+    ['Quando é que um robô parado está estaticamente estável?',['Quando tem rodas','Quando o CG está acima do solo','Quando a projeção do CG cai dentro do polígono de suporte','Quando tem mais de 4 apoios'],2,'É preciso pelo menos 3 apoios não alinhados e o CG projetado dentro da área que eles definem.'],
+    ['Robô diferencial com r = 0,04 m, L = 0,12 m, φ̇R = 5 rad/s e φ̇L = −5 rad/s. O que acontece?',['Avança a 0,2 m/s','Roda no lugar a ≈ 1,67 rad/s','Fica parado','Faz uma curva larga'],1,'v = 0,04·(5−5)/2 = 0; ω = 0,04·10/0,24 ≈ 1,67 rad/s.'],
+    ['O LiDAR é um sensor…',['Proprioceptivo passivo','Proprioceptivo ativo','Exteroceptivo passivo','Exteroceptivo ativo'],3,'Mede o ambiente emitindo impulsos laser.'],
+    ['Um encoder de 500 PPR lido em quadratura (×4) tem que resolução?',['0,72°','0,36°','0,18°','0,09°'],2,'500 × 4 = 2000 contagens/volta → 360°/2000 = 0,18°.'],
+    ['Que termo do PID elimina o erro final causado por uma carga constante?',['Proporcional','Integral','Derivativo','Nenhum'],1,'O integral acumula o erro enquanto ele existir, até o anular. Experimente no módulo 07.'],
+    ['Qual destes NÃO é um modo de colaboração humano-robô?',['Paragem monitorizada de segurança','Guiamento manual','Limitação de potência e força','Controlo de sequência limitada'],3,'Sequência limitada é um tipo de controlo. Os quatro modos são: paragem monitorizada, guiamento manual, monitorização de velocidade e separação, limitação de potência e força.']];
+  const box=$('#quiz');let score=0,done=0;
+  function build(){box.innerHTML='';score=0;done=0;$('#qScore').textContent='0 / 10';
+    Q.forEach((q,i)=>{const d=document.createElement('div');d.className='q';d.innerHTML=`<strong>${i+1}. ${q[0]}</strong><div class="opts"></div><p class="fb" aria-live="polite"></p>`;
+      const o=d.querySelector('.opts');q[1].forEach((t,k)=>{const b=document.createElement('button');b.textContent=t;b.addEventListener('click',()=>{if(d.dataset.done)return;d.dataset.done=1;done++;
+        if(k===q[2]){score++;b.classList.add('right');d.querySelector('.fb').innerHTML='<b>Certo.</b> '+q[3]}else{b.classList.add('wrong');o.children[q[2]].classList.add('right');d.querySelector('.fb').innerHTML='<b>Não é bem assim.</b> '+q[3]}
+        $('#qScore').textContent=`${score} / 10`+(done===10?(score>=8?' — muito bem':' — reveja os módulos assinalados'):'');});o.appendChild(b)});box.appendChild(d)});}
+  $('#qReset').addEventListener('click',build);build();
+}
+})();
+</script>
+
+</body></html>
